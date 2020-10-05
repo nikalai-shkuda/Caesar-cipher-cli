@@ -1,10 +1,12 @@
 const fs = require('fs');
+const path = require('path');
 const { Transform } = require('stream');
 const { caesarCipher } = require('./caesarCipher');
 
 const streamInput = input => {
   if (input) {
-    return fs.createReadStream(input);
+    const inputPath = path.resolve(__dirname, input);
+    return fs.createReadStream(inputPath);
   }
   console.log('Please, enter text: ');
   return process.stdin;
@@ -12,7 +14,9 @@ const streamInput = input => {
 
 const streamOutput = output => {
   if (output) {
-    return fs.createWriteStream(output, {
+    const outputPath = path.resolve(__dirname, output);
+    fs.accessSync(outputPath, fs.constants.F_OK | fs.constants.R_OK);
+    return fs.createWriteStream(outputPath, {
       flags: 'a',
       emitClose: true,
     });
@@ -25,12 +29,12 @@ class StreamEncode extends Transform {
   constructor(options) {
     super (options)
 
+    this.action = options.action;
     this.shift = options.shift;
-    this.type = options.type;
   }
 
   _transform (chunk, _, callback) {
-    const currentShift = this.type === 'encode'
+    const currentShift = this.action === 'encode'
       ? this.shift
       : (26 - this.shift) % 26;
 

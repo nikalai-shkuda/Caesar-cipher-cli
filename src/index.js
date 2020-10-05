@@ -1,27 +1,30 @@
 const { pipeline } = require('stream');
 const { getParams } = require('./params');
 const { streamInput, streamOutput, StreamEncode } = require('./streams');
-const { exit } = require('./exit');
 const { validationArgs } = require('./validation');
 
 try {
-  const { input, output, shift, type } = getParams();
+  const { action, input, output, shift } = getParams();
 
-  if (!validationArgs(type, shift)) return;
+  if (!validationArgs(action, shift)) return;
+
+  const read = streamInput(input);
+  const transform = new StreamEncode({ shift, action });
+  const write = streamOutput(output);
 
   pipeline(
-    streamInput(input),
-    new StreamEncode({ shift, type }),
-    streamOutput(output),
+    read,
+    transform,
+    write,
     err => {
       if (err) {
-        exit(err);
-        process.exit(err.statusCode);
+        console.error(`${err.message}.\nStatus code: 1`);
+        process.exit(1);
       }
-      console.log(`${type} was successful`);
+      console.log(`${action} was successful`);
     }
   );
 } catch (err) {
-  exit(err);
-  process.exit(err.statusCode);
+  console.error(`${err.message}.\nStatus code: 1`);
+  process.exit(1);
 }

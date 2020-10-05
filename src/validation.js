@@ -1,6 +1,6 @@
 const validationArgs = (type, shift) => {
   if (!type || !shift) {
-    console.log(`Error, you didn't enter required param - ${type ? '' : 'type'} ${shift ? '' : 'shift'}\nStatus code: 1`)
+    console.log(`Error, you didn't enter required param - ${type ? '' : 'action'} ${shift ? '' : 'shift'}\nStatus code: 1`)
     return false;
   }
 
